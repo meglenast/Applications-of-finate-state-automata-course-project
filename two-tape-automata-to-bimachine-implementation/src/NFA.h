@@ -57,6 +57,12 @@ public:
 	void removeEpsilon();
 	void epsClosure(std::map<size_t, std::set<size_t>>&, std::set<size_t>&);
 	void updateFinalStatesENFA(const std::set<size_t>&);
+
+	void trimNFA();
+	void findAcessibleStates(std::set<size_t>&);
+	void findCoAcessibleStates(std::set<size_t>&);
+
+
 };
 
 #endif

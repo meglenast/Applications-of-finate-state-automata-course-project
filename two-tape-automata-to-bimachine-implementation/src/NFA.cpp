@@ -58,7 +58,7 @@ const Transition* NFA::getTransitionAt(size_t indx)const
 
 #pragma endregion
 
-
+#pragma region Epsilon-free NFA
 
 void NFA:: memPos()
 {
@@ -92,10 +92,6 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 
 		while (!q.empty())
 		{
-			if (i == 9)
-			{
-				int a = 9;
-			}
 			size_t curr = q.front();
 			q.pop();
 
@@ -185,15 +181,104 @@ void NFA::updateFinalStatesENFA(const std::set<size_t>& closure_final_states)
 		for (std::vector<Transition>::iterator it_transtions = transitions.begin(); it_transtions != transitions.end(); it_transtions++)
 		{
 			if (it_transtions->from == curr_final)
-			{
 				it_transtions->from = final_state;
-			}
+
 			if (it_transtions->to == curr_final)
-			{
 				it_transtions->to = final_state;
-			}
 		}
 	}
 }
 
+#pragma endregion
+
+
+#pragma region Trim NFA
+
+
+void NFA::findAcessibleStates(std::set<size_t>& acessible_states)
+{
+	std::queue<size_t> q;
+	std::vector<bool> visited(states.size(), false);
+
+	q.push(initial_state);
+	visited[initial_state] = true;
+
+	while (!q.empty())
+	{
+		
+		size_t curr = q.front();
+		q.pop();
+
+		size_t mem_ind = (*startingPos)[curr];
+
+		while (mem_ind < transitions.size() && transitions[mem_ind].from == curr)
+		{
+			size_t curr_neighbour = transitions[mem_ind].to;
+
+			if (visited[curr_neighbour] == false)
+			{
+				visited[curr_neighbour] = true;
+				q.push(curr_neighbour);
+			}
+			++mem_ind;
+		}
+		visited[curr] = true;
+		acessible_states.insert(curr);
+	}
+}
+
+void NFA::findCoAcessibleStates(std::set<size_t>& coacessible_states)
+{
+	std::queue<size_t> q;
+	std::vector<bool> visited(states.size(), false);
+
+	q.push(final_state);
+	visited[final_state] = true;
+
+	while (!q.empty())
+	{
+
+		size_t curr = q.front();
+		q.pop();
+
+		for (size_t it_trans = 0; it_trans < transitions.size(); ++it_trans)
+		{
+			size_t curr_neighbour = transitions[it_trans].from;
+
+			if (visited[curr_neighbour] == false)
+			{
+				visited[curr_neighbour] = true;
+				q.push(curr_neighbour);
+			}
+		}
+		visited[curr] = true;
+		coacessible_states.insert(curr);
+	}
+}
+
+void NFA::trimNFA()
+{
+	std::set<size_t> acessible_states;
+	std::set<size_t> coacessible_states;
+
+	delete startingPos;
+	memPos();
+
+	findAcessibleStates(acessible_states);
+	findCoAcessibleStates(coacessible_states);
+
+	std::vector<Transition> new_trasitions;
+
+	for (std::vector<Transition>::iterator i = transitions.begin(); i != transitions.end(); i++)
+	{
+		//change transitions impl with list and then delete invalid notes in-place
+		if (acessible_states.find((*i).from) != acessible_states.end() && acessible_states.find((*i).to) != acessible_states.end() &&
+			coacessible_states.find((*i).from) != coacessible_states.end() && coacessible_states.find((*i).to) != coacessible_states.end())
+		{
+			new_trasitions.push_back(*i);
+		}
+	}
+}
+
+#pragma endregion
 
