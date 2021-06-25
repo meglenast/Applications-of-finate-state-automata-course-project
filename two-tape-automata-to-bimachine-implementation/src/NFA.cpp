@@ -77,7 +77,7 @@ void NFA:: memPos()
 	}
  }
 
-void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure)
+void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_t>& closure_final_states)
 {
 
 	memPos();
@@ -105,6 +105,10 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure)
 			{
 				size_t curr_neighbour = transitions[mem_ind].to;
 				
+				if (curr_neighbour == final_state)
+				{
+					closure_final_states.insert(curr);
+				}
 				if (visited[curr_neighbour] == false)
 				{
 					visited[curr_neighbour] = true;
@@ -138,7 +142,9 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure)
 void NFA::removeEpsilon()
 {
 	std::map<size_t, std::set<size_t>> closure;
-	epsClosure(closure);
+	std::set<size_t> closure_final_states;
+
+	epsClosure(closure, closure_final_states);
 
 	std::vector<Transition> new_transitions;
 
@@ -165,4 +171,29 @@ void NFA::removeEpsilon()
 	}
 
 	transitions = new_transitions;
+
+	updateFinalStatesENFA(closure_final_states);
 }
+
+void NFA::updateFinalStatesENFA(const std::set<size_t>& closure_final_states)
+{
+	for (std::set<size_t> ::iterator it_finals = closure_final_states.begin(); it_finals != closure_final_states.end(); it_finals++)
+	{
+		size_t curr_final = *it_finals;
+		size_t curr_mem_index = (*startingPos)[curr_final];
+
+		for (std::vector<Transition>::iterator it_transtions = transitions.begin(); it_transtions != transitions.end(); it_transtions++)
+		{
+			if (it_transtions->from == curr_final)
+			{
+				it_transtions->from = final_state;
+			}
+			if (it_transtions->to == curr_final)
+			{
+				it_transtions->to = final_state;
+			}
+		}
+	}
+}
+
+
