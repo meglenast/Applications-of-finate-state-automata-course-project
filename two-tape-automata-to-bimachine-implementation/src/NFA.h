@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <map>
+#include <iostream>
+#include <queue>
+#include <set>
 
 const char EPS = '$';
 
@@ -49,7 +52,8 @@ public:
 
 //private:
 public:
-	void epsClosure();
+	void removeEpsilon();
+	void epsClosure(std::map<size_t, std::set<size_t>>& closure);
 	void memPos();
 };
 

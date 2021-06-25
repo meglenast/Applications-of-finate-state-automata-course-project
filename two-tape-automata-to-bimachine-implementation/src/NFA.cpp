@@ -1,7 +1,4 @@
 #include "NFA.h"
-#include <iostream>
-#include <queue>
-#include <set>
 NFA::NFA()
 {}
 
@@ -63,47 +60,6 @@ const Transition* NFA::getTransitionAt(size_t indx)const
 
 
 
-//const NFA& removeEpsilon(const NFA* nfa)
-//{
-//	NFA res = NFA();
-//	
-//}
-//
-//void NFA:: epsClosure()
-//{
-//	std::map<size_t, std::vector<size_t>> closure;
-//	
-//	for (size_t i = 0; i < transitions.size(); i++)
-//	{
-//		if (transitions[i].symbol == EPS)
-//		{
-//			std::map<size_t, std::vector<size_t>>::iterator it = closure.find(transitions[i].from);
-//			if (it == closure.end())
-//			{
-//				std::vector<size_t> curr;
-//				curr.push_back(transitions[i].to);
-//
-//				closure.insert(std::pair<size_t, std::vector<size_t>>(transitions[i].from, curr));
-//			}
-//			else
-//			{
-//				it->second.push_back(transitions[i].to);
-//			}
-//		}
-//	}
-//
-//	for (std::map<size_t, std::vector<size_t>>::iterator it = closure.begin(); it != closure.end(); it++)
-//	{
-//		std::cout << it->first << "		";
-//
-//		for (size_t i = 0; i < it->second.size(); i++)
-//		{
-//			std::cout << it->second[i] << " ";
-//		}
-//		std::cout << '\n';
-//	}
-//}
-
 void NFA:: memPos()
 {
 	startingPos = new std::vector<size_t>(states.size());
@@ -121,12 +77,10 @@ void NFA:: memPos()
 	}
  }
 
-void NFA::epsClosure()
+void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure)
 {
 
 	memPos();
-
-	std::map<size_t, std::set<size_t>> closure;
 	
 	for (size_t i = 0; i < states.size(); i++)
 	{
@@ -138,15 +92,19 @@ void NFA::epsClosure()
 
 		while (!q.empty())
 		{
+			if (i == 9)
+			{
+				int a = 9;
+			}
 			size_t curr = q.front();
 			q.pop();
 
 			size_t mem_ind = (*startingPos)[curr];
 
-			while (transitions[mem_ind].from == curr && transitions[mem_ind].symbol == EPS && mem_ind < states.size())
+			while (mem_ind < transitions.size() && transitions[mem_ind].from == curr && transitions[mem_ind].symbol == EPS)
 			{
 				size_t curr_neighbour = transitions[mem_ind].to;
-
+				
 				if (visited[curr_neighbour] == false)
 				{
 					visited[curr_neighbour] = true;
@@ -174,4 +132,37 @@ void NFA::epsClosure()
 		}
 		std::cout << '\n';
 	}
+}
+
+
+void NFA::removeEpsilon()
+{
+	std::map<size_t, std::set<size_t>> closure;
+	epsClosure(closure);
+
+	std::vector<Transition> new_transitions;
+
+	
+	for (std::map<size_t, std::set<size_t>>::iterator it_state = closure.begin(); it_state != closure.end(); ++it_state)
+	{
+		for (std::set<size_t>::iterator it_closure = (*it_state).second.begin(); it_closure != (*it_state).second.end(); it_closure++)
+		{
+			if ((*it_state).first != *it_closure)
+			{
+				size_t curr_mem_index = (*startingPos)[*it_closure];
+				size_t curr_from = *it_closure;
+
+				while (curr_mem_index < states.size() && transitions[curr_mem_index].from == curr_from)
+				{
+					if (transitions[curr_mem_index].symbol != EPS)
+					{
+						new_transitions.push_back(Transition((*it_state).first, transitions[curr_mem_index].to, transitions[curr_mem_index].symbol));
+					}
+					++curr_mem_index;
+				}
+			}
+		}
+	}
+
+	transitions = new_transitions;
 }
