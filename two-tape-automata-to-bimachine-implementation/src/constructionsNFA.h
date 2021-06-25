@@ -3,10 +3,10 @@
 
 #include "NFA.h"
 
-const NFA* concatAutomata(const NFA*, const NFA*);
-const NFA* unionAutomata (const NFA*, const NFA*);
-const NFA* kleeneStarAutomata (const NFA*);
-const NFA* epsilonAutomata();
-const NFA* singletonAutomata(char);
+NFA* concatAutomata(const NFA*, const NFA*);
+NFA* unionAutomata (const NFA*, const NFA*);
+NFA* kleeneStarAutomata (const NFA*);
+NFA* epsilonAutomata();
+NFA* singletonAutomata(char);
 
 #endif

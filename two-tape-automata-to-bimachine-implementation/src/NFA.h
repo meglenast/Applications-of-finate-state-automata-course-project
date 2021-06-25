@@ -2,6 +2,7 @@
 #define __NFA__HEADER__INCLUDED__
 
 #include <vector>
+#include <map>
 
 const char EPS = '$';
 
@@ -10,10 +11,7 @@ struct Transition
 	size_t from;
 	size_t to;
 	char symbol;
-	/*char symbol_fst_tape;
-	char symbol_scnd_tape;*/
 
-	//TwoTapeTransition(): from(0), to(0), symbol_fst_tape(EPS), symbol_scnd_tape(EPS) {};
 	Transition(): from(0), to(0), symbol(EPS) {};
 	
 	Transition(size_t from, size_t to, char symbol):
@@ -31,6 +29,8 @@ private:
 	std::vector<size_t> states;
 	int initial_state;
 	int final_state;
+
+	std::vector<size_t>* startingPos;
 public:
 	NFA();
 public:
@@ -44,6 +44,13 @@ public:
 	size_t getFinalState()const;
 	size_t getInitialState()const;
 	const  Transition* getTransitionAt(size_t)const;
+
+	//friend const NFA& removeEpsilon(const NFA*);
+
+//private:
+public:
+	void epsClosure();
+	void memPos();
 };
 
 #endif

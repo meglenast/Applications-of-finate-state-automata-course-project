@@ -1,10 +1,10 @@
 #include "regExprParser.h"
 
 //parsing regular expression to the equivalent NFA
-const NFA* parseToNFA(std::string regExpr)
+NFA* parseToNFA(std::string regExpr)
 {
 	std::stack<char> operators;
-	std::stack<const NFA*> automatas;
+	std::stack<NFA*> automatas;
 
 	size_t num_openning_brackets = 0;
 	char curr_op;
@@ -16,7 +16,7 @@ const NFA* parseToNFA(std::string regExpr)
 		//curruntly reading a symbol for a new automata
 		if (curr_symbol != SYM_CONCAT && curr_symbol != SYM_UNION && curr_symbol != SYM_KLEENE_STAR && curr_symbol != '(' && curr_symbol != ')')
 		{
-			const NFA* current_automata = singletonAutomata(curr_symbol);
+			NFA* current_automata = singletonAutomata(curr_symbol);
 			automatas.push(current_automata);
 		}
 		else if (curr_symbol == '(' || curr_symbol == SYM_CONCAT || curr_symbol == SYM_UNION)
@@ -25,11 +25,11 @@ const NFA* parseToNFA(std::string regExpr)
 		}
 		else if (curr_symbol == SYM_KLEENE_STAR)
 		{
-			const NFA* current_automata = automatas.top();
-			const NFA* res_automata = kleeneStarAutomata(current_automata);
+			NFA* current_automata = automatas.top();
+			NFA* res_automata = kleeneStarAutomata(current_automata);
 			automatas.pop();
 			automatas.push(res_automata);
-			delete current_automata;
+			delete current_automata; current_automata = nullptr;
 		}
 		else if (!operators.empty() && operators.top() == '(')
 		{
@@ -40,32 +40,32 @@ const NFA* parseToNFA(std::string regExpr)
 				char op = operators.top();
 				operators.pop();
 
-				const NFA* first = automatas.top();
+				NFA* first = automatas.top();
 				automatas.pop();
 				
-				const NFA* second = automatas.top();
+				NFA* second = automatas.top();
 				automatas.pop();
 
 				switch (op)
 				{
 					case SYM_CONCAT :
 					{
-						const NFA* res_automata = concatAutomata(second, first);
+						NFA* res_automata = concatAutomata(second, first);
 						automatas.push(res_automata);
 
 						operators.pop();
-						delete first;
-						delete second;
+						delete first; first = nullptr;
+						delete second; second = nullptr;
 						break;
 					}
 					case SYM_UNION:
 					{
-						const NFA* res_automata = unionAutomata(second, first);
+						NFA* res_automata = unionAutomata(second, first);
 						automatas.push(res_automata);
 
 						operators.pop();
-						delete first;
-						delete second;
+						delete first; first = nullptr;
+						delete second; second = nullptr;
 					}
 				}
 		}

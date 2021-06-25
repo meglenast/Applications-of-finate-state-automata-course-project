@@ -1,6 +1,6 @@
 #include "constructionsNFA.h"
 
-const NFA* concatAutomata(const NFA* first, const NFA* second)
+NFA* concatAutomata(const NFA* first, const NFA* second)
 {
 	NFA* res = new NFA();
 	size_t numStatesFirst = first->getNumStates();
@@ -30,7 +30,7 @@ const NFA* concatAutomata(const NFA* first, const NFA* second)
 	return res;
 }
 
-const NFA* unionAutomata(const NFA* first, const NFA* second)
+NFA* unionAutomata(const NFA* first, const NFA* second)
 {
 	NFA* res = new NFA();
 	size_t numStates = first->getNumStates() + second->getNumStates() + 2;
@@ -64,7 +64,7 @@ const NFA* unionAutomata(const NFA* first, const NFA* second)
 	return res;
 }
 
-const NFA* kleeneStarAutomata(const NFA* automata)
+NFA* kleeneStarAutomata(const NFA* automata)
 {
 	NFA* res = new NFA();
 	size_t numStates = automata->getNumStates() + 2;
@@ -91,7 +91,7 @@ const NFA* kleeneStarAutomata(const NFA* automata)
 	return res;
 }
 
-const NFA* epsilonAutomata()
+NFA* epsilonAutomata()
 {
 	NFA* res = new NFA();
 	
@@ -103,7 +103,7 @@ const NFA* epsilonAutomata()
 	return res;
 }
 
-const NFA* singletonAutomata(char symbol)
+NFA* singletonAutomata(char symbol)
 {
 	NFA* res = new NFA();
 

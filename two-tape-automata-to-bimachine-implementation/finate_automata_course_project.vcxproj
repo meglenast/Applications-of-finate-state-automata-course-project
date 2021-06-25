@@ -143,11 +143,13 @@
     <ClCompile Include="src\NFA.cpp" />
     <ClCompile Include="src\regExprParser.cpp" />
     <ClCompile Include="src\Source.cpp" />
+    <ClCompile Include="src\two TapeAutomata.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\constructionsNFA.h" />
     <ClInclude Include="src\NFA.h" />
     <ClInclude Include="src\regExprParser.h" />
+    <ClInclude Include="src\twoTapeAutomata.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

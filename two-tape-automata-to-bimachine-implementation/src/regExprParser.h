@@ -10,6 +10,6 @@ const char SYM_UNION       = '+';
 const char SYM_KLEENE_STAR = '*';
 
 
-const NFA* parseToNFA(std::string);
+NFA* parseToNFA(std::string);
 
 #endif

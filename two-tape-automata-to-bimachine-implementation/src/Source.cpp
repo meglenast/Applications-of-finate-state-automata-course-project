@@ -1,7 +1,10 @@
 #include "regExprParser.h"
 
+#include <iostream>
+
 int main()
 {
+		
 	NFA* nfa = new NFA();
 	nfa->setNumStates(3);
 	nfa->setInitState(0);
@@ -25,8 +28,11 @@ int main()
 
 	//const NFA* res = parseToNFA("(a+b)");
 	//const NFA* res = parseToNFA("((a+b).à)");
-	//const NFA* res = parseToNFA("((a+b).à)*");
-	const NFA* res = parseToNFA("(à)*");
+	NFA* res = parseToNFA("((a+b).à)*");
+	//const NFA* res = parseToNFA("(à)*");
+
+	
+	res->epsClosure();
 
 	delete resConcat;
 	delete resUnion;
