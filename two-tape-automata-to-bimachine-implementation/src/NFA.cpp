@@ -2,14 +2,17 @@
 NFA::NFA()
 {}
 
+NFA::~NFA()
+{
+	delete startingPos;
+	startingPos = nullptr;
+}
+
 #pragma region set functions
 
 void NFA::setNumStates(size_t numStates)
 {
-	states = std::vector<size_t>(numStates);
-	
-	for (size_t i = 0; i < numStates; i++)
-		states[i] = i;
+	states = numStates;
 }
 
 void NFA::setTransition(size_t from, size_t to, char symbol)
@@ -33,7 +36,7 @@ void NFA::setFinalState(size_t final_state)
 
 size_t NFA::getNumStates()const
 {
-	return states.size();
+	return states;
 }
 
 size_t NFA::getNumTransitions()const
@@ -55,6 +58,10 @@ const Transition* NFA::getTransitionAt(size_t indx)const
 {
 	return &transitions[indx];
 }
+const std::vector<Transition>& NFA::getTransitions()const
+{
+	return transitions;
+}
 
 #pragma endregion
 
@@ -62,7 +69,7 @@ const Transition* NFA::getTransitionAt(size_t indx)const
 
 void NFA:: memPos()
 {
-	startingPos = new std::vector<size_t>(states.size());
+	startingPos = new std::vector<size_t>(states);
 
 	size_t curr_state = 0;
 
@@ -82,10 +89,10 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 
 	memPos();
 	
-	for (size_t i = 0; i < states.size(); i++)
+	for (size_t i = 0; i < states; i++)
 	{
 		std::queue<size_t> q;
-		std::vector<bool> visited(states.size(), false);
+		std::vector<bool> visited(states, false);
 
 		q.push(i);
 		visited[i] = true;
@@ -113,7 +120,7 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 				
 				++mem_ind;
 			}
-			for (size_t j = 0; j < states.size(); j++)
+			for (size_t j = 0; j < states; j++)
 			{
 				if (visited[j] == 1)
 					closure[i].insert(j);
@@ -134,7 +141,6 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 	}
 }
 
-
 void NFA::removeEpsilon()
 {
 	std::map<size_t, std::set<size_t>> closure;
@@ -154,7 +160,7 @@ void NFA::removeEpsilon()
 				size_t curr_mem_index = (*startingPos)[*it_closure];
 				size_t curr_from = *it_closure;
 
-				while (curr_mem_index < states.size() && transitions[curr_mem_index].from == curr_from)
+				while (curr_mem_index < states && transitions[curr_mem_index].from == curr_from)
 				{
 					if (transitions[curr_mem_index].symbol != EPS)
 					{
@@ -189,8 +195,39 @@ void NFA::updateFinalStatesENFA(const std::set<size_t>& closure_final_states)
 	}
 }
 
-#pragma endregion
+void NFA::updateStatesENFA()
+{
+	size_t curr = 1;
 
+	for (std::vector<Transition>::iterator it_trans = transitions.begin(); it_trans != transitions.end(); ++it_trans)
+	{
+		if ((*it_trans).from > curr)
+		{
+			updateStateNoWith((*it_trans).from, curr);
+			++curr;
+		}
+	}
+	states = curr;
+}
+
+void NFA::updateStateNoWith(size_t oldVal, size_t newVal)
+{
+	for (std::vector<Transition>::iterator it_trans = transitions.begin(); it_trans != transitions.end(); ++it_trans)
+	{
+		if ((*it_trans).from == oldVal)
+		{
+			(*it_trans).from = newVal;
+		}
+		if ((*it_trans).to == oldVal)
+		{
+			(*it_trans).to = newVal;
+		}
+	}
+	if (final_state == oldVal)
+		final_state = newVal;
+}
+
+#pragma endregion
 
 #pragma region Trim NFA
 
@@ -198,7 +235,7 @@ void NFA::updateFinalStatesENFA(const std::set<size_t>& closure_final_states)
 void NFA::findAcessibleStates(std::set<size_t>& acessible_states)
 {
 	std::queue<size_t> q;
-	std::vector<bool> visited(states.size(), false);
+	std::vector<bool> visited(states, false);
 
 	q.push(initial_state);
 	visited[initial_state] = true;
@@ -230,7 +267,7 @@ void NFA::findAcessibleStates(std::set<size_t>& acessible_states)
 void NFA::findCoAcessibleStates(std::set<size_t>& coacessible_states)
 {
 	std::queue<size_t> q;
-	std::vector<bool> visited(states.size(), false);
+	std::vector<bool> visited(states, false);
 
 	q.push(final_state);
 	visited[final_state] = true;
@@ -278,7 +315,8 @@ void NFA::trimNFA()
 			new_trasitions.push_back(*i);
 		}
 	}
+	transitions = new_trasitions;
+	updateStatesENFA();
 }
 
 #pragma endregion
-
