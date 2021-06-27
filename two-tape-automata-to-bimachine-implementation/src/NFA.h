@@ -65,4 +65,34 @@ public:
 
 };
 
+struct {
+	bool operator()(Transition a, Transition b) const
+	{
+		/*if (a.from <= b.from)
+		{
+			if (a.symbol <= b.symbol)
+			{
+				if (a.to <= b.to)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}*/
+		return a.from < b.from;
+	}
+} cmpTransitions;
+
+
 #endif

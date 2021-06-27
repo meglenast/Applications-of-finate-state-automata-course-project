@@ -86,7 +86,7 @@ void NFA:: memPos()
 
 void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_t>& closure_final_states)
 {
-
+	std:sort(transitions.begin(), transitions.end(), cmpTransitions);
 	memPos();
 	
 	for (size_t i = 0; i < states; i++)
@@ -122,8 +122,11 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 			}
 			for (size_t j = 0; j < states; j++)
 			{
-				if (visited[j] == 1)
+				if (visited[j] == true)
+				{
+					if (j == 13) closure_final_states.insert(i);
 					closure[i].insert(j);
+				}
 			}
 		}
 	}
