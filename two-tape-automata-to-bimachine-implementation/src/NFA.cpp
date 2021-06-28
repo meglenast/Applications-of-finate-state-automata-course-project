@@ -124,7 +124,7 @@ void NFA::epsClosure(std::map<size_t, std::set<size_t>>& closure, std::set<size_
 			{
 				if (visited[j] == true)
 				{
-					if (j == 13) closure_final_states.insert(i);
+					if (j == states-1) closure_final_states.insert(i);
 					closure[i].insert(j);
 				}
 			}
@@ -163,7 +163,7 @@ void NFA::removeEpsilon()
 				size_t curr_mem_index = (*startingPos)[*it_closure];
 				size_t curr_from = *it_closure;
 
-				while (curr_mem_index < states && transitions[curr_mem_index].from == curr_from)
+				while (curr_mem_index < transitions.size() && transitions[curr_mem_index].from == curr_from)
 				{
 					if (transitions[curr_mem_index].symbol != EPS)
 					{
