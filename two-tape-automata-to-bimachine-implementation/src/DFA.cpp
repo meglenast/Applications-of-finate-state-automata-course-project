@@ -6,6 +6,8 @@ DFA::DFA(const NFA& nfa)
 {
 	initStatesAndTransitions(nfa);
 	sortTransitionTable();
+	std::vector<int> Li = { 0 };
+	determinization(Li, states, transitions);
 }
 
 DFA::~DFA()
@@ -21,22 +23,22 @@ void DFA::initStatesAndTransitions(const NFA& nfa)
 	
 	for (size_t i = 0; i < nfa.getNumTransitions(); i++)
 	{
-		if (nfa.getTransitionAt(i)->from != curr_state)
-		{
-			states[states_ind].first = i;
-			if (nfa.getTransitionAt(i)->from == nfa.getFinalState())
-			{
-				states[states_ind].second = true;
-			}
-			else
-			{
-				states[states_ind].second = false;
-			}
-			curr_state = nfa.getTransitionAt(i)->from;
-			++states_ind;
-		}
-		transitions[i].first  = nfa.getTransitionAt(i)->symbol;
-		transitions[i].second = nfa.getTransitionAt(i)->to;
+if (nfa.getTransitionAt(i)->from != curr_state)
+{
+	states[states_ind].first = i;
+	if (nfa.getTransitionAt(i)->from == nfa.getFinalState())
+	{
+		states[states_ind].second = true;
+	}
+	else
+	{
+		states[states_ind].second = false;
+	}
+	curr_state = nfa.getTransitionAt(i)->from;
+	++states_ind;
+}
+transitions[i].first = nfa.getTransitionAt(i)->symbol;
+transitions[i].second = nfa.getTransitionAt(i)->to;
 	}
 }
 
@@ -64,10 +66,11 @@ void DFA::sortNthState(size_t ind_state)
 #pragma endregion
 
 
-void DFA::getTransitionsBeginsForLetterGroupedByState(char letter, std::vector<size_t>& begins)const
+void DFA::getTransitionsBeginsForLetterOrderByState(char letter, std::vector<int>& begins)const
 {
 	size_t offset = 0;
 	size_t end_interval = 0;
+	bool flag = false;
 
 	for (size_t i = 0; i < states.size(); i++)
 	{
@@ -77,7 +80,8 @@ void DFA::getTransitionsBeginsForLetterGroupedByState(char letter, std::vector<s
 		{
 			if (transitions[offset].first == letter)
 			{
-				begins[i] =  offset;
+				begins[i] = offset;
+				flag = true;
 				break;
 			}
 			else
@@ -85,69 +89,179 @@ void DFA::getTransitionsBeginsForLetterGroupedByState(char letter, std::vector<s
 				++offset;
 			}
 		}
+		if (!flag)
+		{
+			begins[i] = -1;
+		}
+		else
+		{
+			flag = false;
+		}
 	}
 }
 
-// naive!
-//void DFA::computeTransitions(const std::vector<size_t>& lst_states, char letter, std::vector<size_t>& begins, std::vector<size_t>& res)
-//{
-//	std::vector<size_t> T = std::vector<size_t>(transitions.size());
-//	size_t ind = 0;
+void DFA::computeTransitions(std::vector<int>& P, char letter, std::vector<int>& R)
+{
+
+	if (P.size() == 1 && P[0] == -1)
+	{
+		R.push_back(-1);
+		return;
+	}
+
+	std::priority_queue<size_t, std::vector<size_t>, std::greater<size_t>> min_heap;
+
+	for (size_t p = 0; p < P.size(); p++)
+		min_heap.push(P[p]);
+
+	//
+	std::vector<int> begins(states.size());
+	getTransitionsBeginsForLetterOrderByState(letter, begins);
+	//
+
+	std::set<size_t> T;
+
+	size_t j = 0;
+
+	while (!min_heap.empty())
+	{
+		size_t p = min_heap.top();
+
+		//if (j == 0 || (j < R.size()))
+		//{
+			if (begins[p] != -1)
+			{
+				//
+				size_t dest = transitions[begins[p]].second;
+				//if (R[j] != dest)
+//				{
+					T.insert(dest);
+					//R[j] = dest;
+					//++j;
+				//}
+			}
+			else
+			{
+				break;
+			}
+			
+		//}
+		
+		min_heap.pop();
+
+		begins[p] += 1;
+
+		if (p < states.size() - 1 && begins[p] < transitions.size() &&
+			transitions[begins[p]].first == letter && begins[p] < states[p + 1].first)
+		{
+			//
+			++j;
+			min_heap.push(p);
+		}
+	}
+
+	for (std::set<size_t>::iterator i = T.begin(); i != T.end(); i++)
+	{
+		R.push_back(*i);
+	}
+	if (R.size() == 0) R.push_back(-1);
+}
 //
-//	for (size_t i = 0; i < lst_states.size(); i++)
+//size_t DFA::computeTransitions(std::vector<size_t>& P, char letter, std::vector<size_t>& begins, std::vector<size_t>& R)
+//{
+//	std::vector<size_t> T(transitions.size());
+//	size_t i = 0;
+//
+//	for (size_t p = 0; i < P.size(); i++)
 //	{
-//		while (transitions[begins[lst_states[i]]].first == letter
-//			&& begins[lst_states[i]] < states[lst_states[i] + 1].first)
+//		while (transitions[begins[p]].first == letter && begins[p] < states[p + 1].first)
 //		{
-//			T[ind] = transitions[begins[lst_states[i]]].second;
-//			++ind;
-//			begins[lst_states[i]] += 1;
+//			T[i] = transitions[begins[p]].second;
+//			++i;
+//			begins[p] += 1;
 //		}
 //	}
-//		
 //	std::sort(T.begin(), T.end());
 //
 //	size_t j = 0;
 //
-//	for (size_t k = 0; k < ind; k++)
+//	for (size_t k = 0; k < i; k++)
 //	{
-//		if (j == 0 || res[j-1] != res[k])
+//		if (j == 0 || R[j - 1] != T[k])
 //		{
-//			res[j] = T[k];
-//			j++;
+//			R[j] = T[k];
+//			++j;
 //		}
 //	}
+//
+//	return j;
 //}
 
 
-size_t DFA::computeTransitions(const std::vector<size_t>& lst_states, char letter, std::vector<size_t>& begins, std::vector<size_t>& res)
+bool DFA::isFinal(const std::vector<int>& lst_states)
 {
-	std::priority_queue<size_t, std::vector<size_t>, std::greater<size_t>> pq;
-	
-	for (size_t i = 0; i < lst_states.size(); i++)
-		pq.push(lst_states[i]);
-
-	size_t p;
-	size_t dest;
-	size_t j = 0;
-	while (!pq.empty())
+	if (lst_states.size() == 1 && lst_states[0] == -1) return false;
+	for (size_t i = 0; i < lst_states.size(); ++i)
 	{
-		p = pq.top();
-		dest = transitions[begins[p]].second;
-
-		if (j == 0 || res[j] != dest)
+		if (states[lst_states[i]].second == true) // check if final
 		{
-			res[j] = dest;
-			++j;
-		}
-		pq.pop();
-		begins[p] = begins[p] + 1;
-
-		if (transitions[begins[p]].first == letter && begins[p] < states[p+1].first)
-		{
-			pq.push(p);
+			return true;
 		}
 	}
-	return j;
+	return false;
 }
 
+void DFA::determinization(std::vector<int>& Li, const std::vector<stateDFA>& states, const std::vector<transitionDFA>& transitions)
+{
+	std::queue<std::vector<int>> queue;
+	std::map<std::vector<int>, size_t> hash;
+
+	hash.insert({ Li, 0 });
+	queue.push(Li);
+
+	std::vector<int> P;
+
+	while (!queue.empty())
+	{
+		P = queue.front();
+		queue.pop();
+		//
+		if (!(P.size() == 1 && P[0] == -1))
+		{
+			stateDFA curr(transitionsD.size(), isFinal(P));
+			statesD.push_back(curr);
+		}
+
+
+		std::vector<int> begins(states.size());
+
+		for (size_t i = 0; i < SIGMA.size(); i++)
+		{
+			std::vector<int> r;
+			getTransitionsBeginsForLetterOrderByState(SIGMA[i], begins);
+			
+			computeTransitions(P, SIGMA[i], r);
+		
+			if (hash.find(r) == hash.end())
+			{
+				if ( (r.size() == 1 && r[0] != -1) || (r.size() > 1) )
+				{
+					hash.insert({ r, hash.size() });
+
+					transitionDFA curr_trans = { SIGMA[i], (*hash.find(r)).second };
+					transitionsD.push_back(curr_trans);
+
+					queue.push(r);
+
+				}
+						}
+			else
+			//else if (r.size() != 1  r[0] != -1)
+			{
+				transitionDFA curr_trans = { SIGMA[i], (*hash.find(r)).second };
+				transitionsD.push_back(curr_trans);
+			}
+		}
+	}
+	initialStateD = (*hash.find(Li)).second;
+}

@@ -11,6 +11,8 @@ typedef std::pair<size_t, bool> stateDFA;
 //Transition::<char::letter, size_t::dest>
 typedef std::pair<char, size_t> transitionDFA;
 
+const std::vector<char> SIGMA = { 'a', 'b', 'c', 'd' };
+
 class DFA
 {
 public:
@@ -23,15 +25,24 @@ private:
 	std::list<stateDFA> initial_states;
 	std::vector<transitionDFA> transitions;
 
-private:
+	std::vector<stateDFA> statesD;
+	std::vector<transitionDFA> transitionsD;
+	size_t initialStateD;
+
+//private:
+public:
 
 	void initStatesAndTransitions(const NFA&);
 	void sortTransitionTable();
 	void sortNthState(size_t);
-	void getTransitionsBeginsForLetterGroupedByState(char, std::vector<size_t>&)const;
-	size_t computeTransitions(const std::vector<size_t>&, char, std::vector<size_t>&, std::vector<size_t>&);
-};
+	void getTransitionsBeginsForLetterOrderByState(char, std::vector<int>&)const;
 
+	bool isFinal(const std::vector<int>&);
+	void computeTransitions(std::vector<int>&, char, std::vector<int>&);
+
+	
+	void determinization(std::vector<int>&, const std::vector<stateDFA>&, const std::vector<transitionDFA>&);
+};
 
 #endif
 
