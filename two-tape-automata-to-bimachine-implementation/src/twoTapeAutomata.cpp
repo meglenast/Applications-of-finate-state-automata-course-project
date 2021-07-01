@@ -93,11 +93,11 @@ void TwoTapeAutomata::calculateNewStatesAndTransitions()
 	const std::vector<stateDFA>&      secondStatesD      = second_tape->getStates();
 	const std::vector<transitionDFA>& secondTransitionsD = second_tape->getTransitions();
 	
-	std::set<twoTapeState_p> temp_states;
+	std::set<twoTapeState_p> states_reached;
 
 	std::queue<twoTapeState_p> q;
 	q.push({ q_1,q_2 });
-	temp_states.insert({ q_1,q_2 });
+	states_reached.insert({ q_1,q_2 });
 
 	twoTapeState_p curr;
 
@@ -127,12 +127,21 @@ void TwoTapeAutomata::calculateNewStatesAndTransitions()
 														{ firstTransitionsD[i].second, secondTransitionsD[j].second },
 														{ firstTransitionsD[i].first,  secondTransitionsD[j].first  }));
 
-				if (temp_states.find({ firstTransitionsD[i].second, secondTransitionsD[j].second }) == temp_states.end())
+				if (states_reached.find({ firstTransitionsD[i].second, secondTransitionsD[j].second }) == states_reached.end())
 				{
-					temp_states.insert({ firstTransitionsD[i].second, secondTransitionsD[j].second });
+					states_reached.insert({ firstTransitionsD[i].second, secondTransitionsD[j].second });
 					q.push({ firstTransitionsD[i].second, secondTransitionsD[j].second });
 				}
 			}
+		}
+	}
+
+	for (std::set<twoTapeState_p>::iterator it = states_reached.begin(); it != states_reached.end(); ++it)
+	{
+		states.push_back(*it);
+		if (firstStatesD[(*it).first].second == true && secondStatesD[(*it).second].second == true)
+		{
+			finalStates.push_back(*it);
 		}
 	}
 }
