@@ -23,24 +23,45 @@ void DFA::initStatesAndTransitions(const NFA& nfa)
 	
 	for (size_t i = 0; i < nfa.getNumTransitions(); i++)
 	{
-if (nfa.getTransitionAt(i)->from != curr_state)
+		if (nfa.getTransitionAt(i)->from != curr_state)
+		{
+			states[states_ind].first = i;
+			if (nfa.getTransitionAt(i)->from == nfa.getFinalState())
+			{
+				states[states_ind].second = true;
+			}
+			else
+			{
+				states[states_ind].second = false;
+			}
+			
+			curr_state = nfa.getTransitionAt(i)->from;
+			++states_ind;
+		}
+		transitions[i].first = nfa.getTransitionAt(i)->symbol;
+		transitions[i].second = nfa.getTransitionAt(i)->to;
+	}
+	if (states[nfa.getFinalState()].second == 0)
+	{
+		states[nfa.getFinalState()].first  = -1;
+		states[nfa.getFinalState()].second = true;
+	}
+}
+#pragma region Get functions
+size_t DFA::getInitState()const
 {
-	states[states_ind].first = i;
-	if (nfa.getTransitionAt(i)->from == nfa.getFinalState())
-	{
-		states[states_ind].second = true;
-	}
-	else
-	{
-		states[states_ind].second = false;
-	}
-	curr_state = nfa.getTransitionAt(i)->from;
-	++states_ind;
+	return initialStateD;
 }
-transitions[i].first = nfa.getTransitionAt(i)->symbol;
-transitions[i].second = nfa.getTransitionAt(i)->to;
-	}
+const std::vector<stateDFA>& DFA::getStates()const
+{
+	return statesD;
 }
+const std::vector<transitionDFA>& DFA::getTransitions()const
+{
+	return transitionsD;
+}
+#pragma endregion
+
 
 #pragma region Sorting transition table
 
@@ -55,11 +76,15 @@ void DFA::sortNthState(size_t ind_state)
 {
 	if (ind_state != states.size() - 1)
 	{
-		std::sort(transitions.begin() + states[ind_state].first, transitions.begin() + states[ind_state + 1].first);
+		if (states[ind_state + 1].first > 0)
+			std::sort(transitions.begin() + states[ind_state].first, transitions.begin() + states[ind_state + 1].first);
+		else
+			std::sort(transitions.begin() + states[ind_state].first, transitions.end());
 	}
 	else
 	{
-		std::sort(transitions.begin() + states[ind_state].first, transitions.end());
+		if (states[ind_state].first > 0)
+			std::sort(transitions.begin() + states[ind_state].first, transitions.end());
 	}
 }
 
@@ -68,26 +93,52 @@ void DFA::sortNthState(size_t ind_state)
 
 void DFA::getTransitionsBeginsForLetterOrderByState(char letter, std::vector<int>& begins)const
 {
-	size_t offset = 0;
-	size_t end_interval = 0;
-	bool flag = false;
+	int    offset = 0;
+	int    end_interval = 0; // has value -1 when the final state has no outgoing edges
+	bool   flag = false;
 
 	for (size_t i = 0; i < states.size(); i++)
 	{
 		offset = states[i].first;
 		end_interval = i == states.size() - 1 ? transitions.size() : states[i + 1].first;
-		while (offset < end_interval)
+		while (offset < end_interval ||/* (offset == end_interval) ||*/ end_interval == -1)
 		{
-			if (transitions[offset].first == letter)
+			if (offset == end_interval)
 			{
-				begins[i] = offset;
-				flag = true;
+				if (transitions[offset].first == letter)
+				{
+					begins[i] = offset;
+					flag = true;
+					break;
+				}
+				else
+				{
+					++offset;
+				}
+			}
+			else if (offset == -1)
+			{
+				begins[i] = -1;
 				break;
 			}
 			else
 			{
-				++offset;
+				if (offset >= transitions.size())
+				{
+					break;
+				}
+				if (transitions[offset].first == letter)
+				{
+					begins[i] = offset;
+					flag = true;
+					break;
+				}
+				else
+				{
+					++offset;
+				}
 			}
+			
 		}
 		if (!flag)
 		{
@@ -228,8 +279,8 @@ void DFA::determinization(std::vector<int>& Li, const std::vector<stateDFA>& sta
 		//
 		if (!(P.size() == 1 && P[0] == -1))
 		{
-			stateDFA curr(transitionsD.size(), isFinal(P));
-			statesD.push_back(curr);
+				stateDFA curr(transitionsD.size(), isFinal(P));
+				statesD.push_back(curr);
 		}
 
 
