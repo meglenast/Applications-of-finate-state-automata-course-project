@@ -209,6 +209,11 @@ void NFA::updateStatesENFA()
 			updateStateNoWith((*it_trans).from, curr);
 			++curr;
 		}
+		if ((*it_trans).to > curr)
+		{
+			updateStateNoWith((*it_trans).to, curr);
+			++curr;
+		}
 	}
 	states = curr;
 }
