@@ -1,7 +1,7 @@
 #ifndef __TWO_TAPE__AUTOMATA__INCLUDED__
 #define __TWO_TAPE__AUTOMATA__INCLUDED__
 
-#include "NFA.h"
+#include "DFA.h"
 
 typedef std::pair<size_t, size_t> twoTapeState_p;
 typedef std::pair<char, char>     twoTapeLabel_p;
@@ -11,7 +11,7 @@ struct TwoTapeTransition
 {
 	twoTapeState_p from;
 	twoTapeState_p to;
-	twoTapeState_p label;
+	twoTapeLabel_p label;
 
 	TwoTapeTransition() : from(0,0), to(0,0), label(EPS, EPS) {};
 
@@ -26,13 +26,18 @@ class TwoTapeAutomata
 {
 private:
 
-	std::vector<TwoTapeTransition> tt_transitions;
-	std::vector<twoTapeState_p>    tt_states;
-	twoTapeState_p init_state;
-	twoTapeState_p final_state;
+	const DFA* first_tape;
+	const DFA* second_tape;
+
+	twoTapeState_p initState;
+	std::vector<twoTapeState_p> states;
+	std::vector<TwoTapeTransition> transitions;
+	std::vector<twoTapeState_p> finalStates;
 
 public:
-	TwoTapeAutomata(const NFA*, const NFA*);
+	TwoTapeAutomata(const DFA*, const DFA*);
+private:
+	void calculateNewStatesAndTransitions();
 };
 
 
