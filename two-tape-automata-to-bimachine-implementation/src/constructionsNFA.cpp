@@ -5,27 +5,34 @@ NFA* concatAutomata(const NFA* first, const NFA* second)
 	NFA* res = new NFA();
 	size_t numStatesFirst = first->getNumStates();
 
-	res->setNumStates(first->getNumStates() + second->getNumStates());
+	res->setNumStates(first->getNumStates() + second->getNumStates() + 2);//
 
 	const Transition* curr;
 
+	//
+	res->setTransition(0, first->getInitialState()+1, EPS);
 	// setting the trasitions of the resulting automata
 	for (size_t i = 0; i < first->getNumTransitions(); i++) // adding first automata transitions
 	{
 		curr = first->getTransitionAt(i);
-		res->setTransition(curr->from, curr->to, curr->symbol);
+		res->setTransition(curr->from + 1, curr->to + 1, curr->symbol);//+1
 	}
 
-	res->setTransition(first->getFinalState(), first->getNumStates(), EPS);
+	res->setTransition(first->getFinalState() + 1, first->getNumStates() + 1, EPS);//+1
 
 	for (size_t i = 0; i < second->getNumTransitions(); i++)//adding second automtata transitions
 	{
 		curr = second->getTransitionAt(i);
-		res->setTransition(curr->from + numStatesFirst, curr->to + numStatesFirst, curr->symbol);
-	  }
+		res->setTransition(curr->from + numStatesFirst + 1, curr->to + numStatesFirst + 1, curr->symbol);//+1
+	 }
 
-	res->setInitState(first->getInitialState());
-	res->setFinalState(second->getFinalState() + first->getNumStates());
+	//res->setInitState(first->getInitialState());
+	//res->setFinalState(second->getFinalState() + first->getNumStates());
+
+	res->setTransition(second->getFinalState() + first->getNumStates() + 1, res->getNumStates() - 1 , EPS);//+1
+
+	res->setInitState(0);
+	res->setFinalState(res->getNumStates()-1);
 
 	return res;
 }
