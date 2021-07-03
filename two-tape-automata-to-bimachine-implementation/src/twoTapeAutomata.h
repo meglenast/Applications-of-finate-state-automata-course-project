@@ -22,6 +22,21 @@ struct TwoTapeTransition
 	{}
 };
 
+struct TwoTapeTransitionSimple
+{
+	size_t from;
+	size_t to;
+	twoTapeLabel_p label;
+
+	TwoTapeTransitionSimple() : from(0), to(0), label(EPS,EPS) {};
+
+	TwoTapeTransitionSimple(size_t from, size_t to, twoTapeLabel_p label) :
+		from(from),
+		to(to),
+		label(label)
+	{}
+};
+
 class TwoTapeAutomata
 {
 private:
@@ -32,14 +47,15 @@ private:
 	twoTapeState_p initState;
 	std::vector<twoTapeState_p> states;
 	std::vector<TwoTapeTransition> transitions;
-	std::vector<twoTapeState_p> finalStates;
-
+	std::set<twoTapeState_p> finalStates;
+	
 public:
-	TwoTapeAutomata(const DFA*, const DFA*);
+	TwoTapeAutomata(DFA*, DFA*);
+	
+	const std::vector<TwoTapeTransition>& getTransitions()const;
+	const std::set<twoTapeState_p>&       getFinalStates()const;
 private:
 	void calculateNewStatesAndTransitions();
 };
-
-
 
 #endif

@@ -41,6 +41,8 @@ private:
 private:
 
 	void generateRightAutomata(const TwoTapeAutomata&);
+	void generateLeftAutomata (const TwoTapeAutomata&);
+	void generateDeltaRev(const TwoTapeAutomata&, std::map<std::pair<size_t, size_t>, std::vector<std::pair<char, std::pair<size_t, size_t>>>>&);
 };
 
 

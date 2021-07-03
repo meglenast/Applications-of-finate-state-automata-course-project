@@ -1,10 +1,14 @@
 #include "twoTapeAutomata.h"
 
-TwoTapeAutomata::TwoTapeAutomata(const DFA* first_tape, const DFA* second_tape):
+//real-time two-tape automata over the free monoid
+//real-tiem transducers
+TwoTapeAutomata::TwoTapeAutomata(DFA* first_tape,DFA* second_tape):
 	first_tape(first_tape),
 	second_tape(second_tape),
 	initState(first_tape->getInitState(), second_tape->getInitState())
 {
+	/*first_tape->expandDelta();
+	second_tape->expandDelta();*/
 	calculateNewStatesAndTransitions();
 }
 
@@ -141,9 +145,17 @@ void TwoTapeAutomata::calculateNewStatesAndTransitions()
 		states.push_back(*it);
 		if (firstStatesD[(*it).first].second == true && secondStatesD[(*it).second].second == true)
 		{
-			finalStates.push_back(*it);
+			finalStates.insert(*it);
 		}
 	}
 }
 
+const std::vector<TwoTapeTransition>& TwoTapeAutomata::getTransitions()const
+{
+	return transitions;
+}
 
+const std::set<twoTapeState_p>& TwoTapeAutomata::getFinalStates()const
+{
+	return finalStates;
+}
