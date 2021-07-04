@@ -34,7 +34,8 @@ void Bimachine::generateRightAutomata(const TwoTapeAutomata& T)
 		generateTransitionsRightAtomataFrom(i, currTrans, statesR_RemapHashValues);
 	}
 
-	statesRight = statesR.size();
+	for (size_t i = 0; i < statesR.size(); i++)
+		statesRight.push_back(i);
 }
 
 void Bimachine::generateLeftAutomata(const TwoTapeAutomata& T)
