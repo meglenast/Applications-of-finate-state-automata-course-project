@@ -58,6 +58,10 @@ private:
 									std::map<char, std::set<std::pair<size_t, size_t>>>&,
 									std::map < std::set<std::pair<size_t, size_t>>, size_t>&);
 
+	void reverseDeltaRight(std::map<size_t, std::set<std::pair<size_t, char>>>&);
+
+	void mapCharToTransitionAndOutputInTransducer(std::map<char, std::map<std::pair<size_t, size_t>, std::set<std::pair<std::pair<size_t, size_t>, char>>>>& deltaT_helper, std::vector<TwoTapeTransition>& deltaT);
+
 	std::vector < std::set<std::pair<size_t, size_t>>>::iterator findExist(std::vector < std::set<std::pair<size_t, size_t>>>&, std::set<std::pair<size_t, size_t>>);
 };
 

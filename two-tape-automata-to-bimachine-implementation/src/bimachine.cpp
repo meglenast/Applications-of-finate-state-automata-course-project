@@ -3,7 +3,7 @@
 Bimachine::Bimachine(const TwoTapeAutomata& T)
 {
 	generateRightAutomata(T);
-	//generateLeftAutomata (T);
+	generateLeftAutomata (T);
 }
 
 Bimachine::~Bimachine()
@@ -13,8 +13,6 @@ void Bimachine::generateRightAutomata(const TwoTapeAutomata& T)
 {
 	std::map<std::pair<size_t, size_t>, std::vector<std::pair<char, std::pair<size_t, size_t>>>> reverseDeltaT;
 	generateDeltaRev(T, reverseDeltaT);
-
-	//generating deltaRight and StatesRight
 
 	std::vector < std::set<std::pair<size_t, size_t>>> statesR;
 	std::map < std::set<std::pair<size_t, size_t>>, size_t> statesR_RemapHashValues;
@@ -35,17 +33,22 @@ void Bimachine::generateRightAutomata(const TwoTapeAutomata& T)
 		
 		generateTransitionsRightAtomataFrom(i, currTrans, statesR_RemapHashValues);
 	}
+
 	statesRight = statesR.size();
-	/*for (size_t i = 0; i < statesR.size(); i++)
-	{
-		statesRight.insert(i);
-	}*/
 }
 
-//void Bimachine::generateLeftAutomata(const TwoTapeAutomata&)
-//{
-//
-//}
+void Bimachine::generateLeftAutomata(const TwoTapeAutomata& T)
+{
+	
+	std::map<size_t, std::set<std::pair<size_t, char>>> deltaR_helper;
+	reverseDeltaRight(deltaR_helper);
+
+	std::vector<TwoTapeTransition> deltaT = T.getTransitions();
+
+	std::map<char, std::map<std::pair<size_t,size_t>, std::set<std::pair<std::pair<size_t,size_t>, char>>>> deltaT_helper;
+    
+	mapCharToTransitionAndOutputInTransducer(deltaT_helper, deltaT);	
+}
 
 void Bimachine::generateDeltaRev(const TwoTapeAutomata& T, std::map<std::pair<size_t, size_t>, std::vector<std::pair<char, std::pair<size_t, size_t>>>>& reverseDeltaT)
 {
@@ -118,6 +121,54 @@ void Bimachine::generateTransitionsRightAtomataFrom(size_t from,
 {
 	for (std::map<char, std::set<std::pair<size_t, size_t>>>::iterator it_trans = currTrans.begin(); it_trans != currTrans.end(); it_trans++)
 		transitionsRight.insert(std::make_pair(std::make_pair(from, it_trans->first), statesR_RemapHashValues.at((*it_trans).second)));
+}
+
+//reversing delta right
+// <q_end> --> <q_beg,letter> for every transition in right automata
+void Bimachine::reverseDeltaRight(std::map<size_t, std::set<std::pair<size_t, char>>>& deltaR_helper)
+{
+	for (std::set<std::pair<std::pair<size_t, char>, size_t>>::iterator it_trans_right = transitionsRight.begin(); it_trans_right != transitionsRight.end(); ++it_trans_right)
+	{
+		size_t to = (*it_trans_right).second;
+		size_t from = (*it_trans_right).first.first;
+		char letter = (*it_trans_right).first.second;
+
+		if (deltaR_helper.find(to) == deltaR_helper.end())
+		{
+			std::set<std::pair<size_t, char>> curr;
+			deltaR_helper.insert({ to, curr });
+		}
+		deltaR_helper.at(to).insert({ from, letter });
+	}
+}
+
+
+//remap deltaT 
+// <char> --> ( <q_beg> --> {<q_end, str>} ) for every transition in T
+void Bimachine::mapCharToTransitionAndOutputInTransducer(std::map<char, std::map<std::pair<size_t, size_t>, std::set<std::pair<std::pair<size_t, size_t>, char>>>>& deltaT_helper, std::vector<TwoTapeTransition>& deltaT)
+{
+	for (std::vector<TwoTapeTransition>::iterator it_delta_t = deltaT.begin(); it_delta_t != deltaT.end(); ++it_delta_t)
+	{
+		TwoTapeTransition curr_transition_t = *it_delta_t;
+
+		char fst_tape_letter = curr_transition_t.label.first;
+		char scnd_tape_letter = curr_transition_t.label.second;
+
+		std::pair<size_t, size_t> from = curr_transition_t.from;
+		std::pair<size_t, size_t> to = curr_transition_t.to;
+
+		if (deltaT_helper.find(fst_tape_letter) == deltaT_helper.end())
+		{
+			std::map<std::pair<size_t, size_t>, std::set<std::pair<std::pair<size_t, size_t>, char>>> curr;
+			deltaT_helper.insert({ fst_tape_letter,curr });
+		}
+		if ((*deltaT_helper.find(fst_tape_letter)).second.find(from) == deltaT_helper.find(fst_tape_letter)->second.end())
+		{
+			std::set<std::pair<std::pair<size_t, size_t>, char>> curr;
+			deltaT_helper.at(fst_tape_letter).insert({ from,curr });
+		}
+		deltaT_helper.at(fst_tape_letter).at(from).insert({ to, scnd_tape_letter });
+	}
 }
 
 std::vector < std::set<std::pair<size_t, size_t>>>::iterator Bimachine::findExist(std::vector < std::set<std::pair<size_t, size_t>>>& arr, std::set<std::pair<size_t, size_t>> elem)
