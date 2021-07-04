@@ -31,7 +31,8 @@ private:
 	DFA* left_automata;
 	DFA* right_automata;*/
 
-	std::set<size_t> statesRight;
+	//std::set<size_t> statesRight;
+	size_t statesRight;
 	size_t initStateRight;
 	std::set<std::pair<std::pair<size_t, char>, size_t>> transitionsRight;
 
@@ -43,6 +44,21 @@ private:
 	void generateRightAutomata(const TwoTapeAutomata&);
 	void generateLeftAutomata (const TwoTapeAutomata&);
 	void generateDeltaRev(const TwoTapeAutomata&, std::map<std::pair<size_t, size_t>, std::vector<std::pair<char, std::pair<size_t, size_t>>>>&);
+	
+	void generateReachedStatesFrom(std::set<std::pair<size_t, size_t>>& currState, std::map<char, std::set<std::pair<size_t, size_t>>>& currTrans,
+									std::map<std::pair<size_t, size_t>, std::vector<std::pair<char,
+									std::pair<size_t, size_t>>>>&reverseDeltaT);
+	
+	void generateStatesRightAutomataFromCurrTrans(std::map<char, std::set<std::pair<size_t, size_t>>>& currTrans,
+									std::vector < std::set<std::pair<size_t, size_t>>>& statesR,
+									std::map < std::set<std::pair<size_t, size_t>>, size_t>& statesR_RemapHashValues,
+									size_t& cntStates);
+
+	void generateTransitionsRightAtomataFrom(size_t,
+									std::map<char, std::set<std::pair<size_t, size_t>>>&,
+									std::map < std::set<std::pair<size_t, size_t>>, size_t>&);
+
+	std::vector < std::set<std::pair<size_t, size_t>>>::iterator findExist(std::vector < std::set<std::pair<size_t, size_t>>>&, std::set<std::pair<size_t, size_t>>);
 };
 
 
