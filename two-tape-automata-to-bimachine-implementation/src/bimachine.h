@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include "twoTapeAutomata.h"
 
+typedef std::map<size_t, std::pair<size_t, size_t>> selectorFunc_p;
+typedef std::pair<std::set<std::pair<size_t,size_t>>, selectorFunc_p> leftState_p;
+
 struct bimachineTransition
 {
 	size_t state_left;
@@ -30,13 +33,22 @@ private:
 	/*
 	DFA* left_automata;
 	DFA* right_automata;*/
+	const TwoTapeAutomata* T;
 
-	//std::set<size_t> statesRight;
-	size_t statesRight;
+
+	std::map < std::set<std::pair<size_t, size_t>>, size_t> statesR_mappedValues;
+	std::map < leftState_p, size_t> statesL_mappedValues;
+
+
+	std::vector<std::set<std::pair<size_t, size_t>>> statesR;
+	// 
+	std::vector<leftState_p> statesL;
 	size_t initStateRight;
 	std::set<std::pair<std::pair<size_t, char>, size_t>> transitionsRight;
 
 	std::vector<bimachineTransition> outputFunciton;
+
+	std::map<size_t, std::pair<size_t, size_t>> selector_func;
 
 
 private:
@@ -61,6 +73,10 @@ private:
 	void reverseDeltaRight(std::map<size_t, std::set<std::pair<size_t, char>>>&);
 
 	void mapCharToTransitionAndOutputInTransducer(std::map<char, std::map<std::pair<size_t, size_t>, std::set<std::pair<std::pair<size_t, size_t>, char>>>>& deltaT_helper, std::vector<TwoTapeTransition>& deltaT);
+
+	void initSelector();
+
+	void generateLeftStates(std::map<char, std::map<std::pair<size_t, size_t>, std::set<std::pair<std::pair<size_t, size_t>, char>>>>&, std::map<size_t, std::set<std::pair<size_t, char>>>&);
 
 	std::vector < std::set<std::pair<size_t, size_t>>>::iterator findExist(std::vector < std::set<std::pair<size_t, size_t>>>&, std::set<std::pair<size_t, size_t>>);
 };
